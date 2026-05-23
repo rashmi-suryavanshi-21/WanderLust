@@ -12,7 +12,6 @@ const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 const ExpressError= require("./utils/ExpressError.js");
-const { required } = require("joi");
 const session = require("express-session");
 const flash = require("connect-flash");
 const passport = require("passport");
@@ -42,16 +41,17 @@ app.use(methodOverride("_method"));
 app.engine('ejs',ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
 
+app.set("trust proxy", 1);
 const sessionOptions = {
-        secret: process.env.SECRET,
-        resave: false,            
-        saveUninitialized: false,    
-        cookie :{
-            expires: Date.now() + 7 * 24 * 60 * 60* 1000,
-            maxAge: 7 * 24 * 60 * 60* 1000,
-            httpOnly:true,
-        },
-       
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+    },
 };
 
 
@@ -85,7 +85,7 @@ app.use((err,req,res,next)=>{
     let {statusCode=500,message="something went wrong!"} =err;
     res.status(statusCode).render("error.ejs",{message});
 });
-
-app.listen(3000,()=>{
-    console.log("Server is listening to a port 3000");
+const port = process.env.PORT || 3000;
+app.listen(port,()=>{
+    console.log(`Server is listening to a port ${port}`);
 });
